@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Map Page</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <style>#map { height: 500px; }</style>
+</head>
+<body class="bg-gray-50 text-gray-900 flex flex-col min-h-screen p-6">
+
+  <!-- Top Navigation -->
+  <header class="flex justify-between items-center w-full max-w-5xl mx-auto mb-6">
+    <button onclick="goBack()" class="bg-gray-200 px-4 py-2 rounded-lg shadow hover:bg-gray-300">
+      ← Back
+    </button>
+    <input id="location-input" type="text" placeholder="Search for a location..." class="flex-1 ml-4 border rounded-lg p-3 shadow" />
+  </header>
+
+  <!-- Map Container -->
+  <main class="flex-1 flex items-center justify-center w-full max-w-5xl mx-auto mb-6">
+    <div id="map" class="w-full rounded-lg shadow"></div>
+  </main>
+
+  <!-- Submit Button -->
+  <footer class="w-full max-w-5xl mx-auto text-center">
+    <button id="submit-btn" class="bg-blue-500 text-white px-6 py-3 rounded-xl shadow hover:bg-blue-600">
+      Submit Location
+    </button>
+  </footer>
+
+  <script>
+    const map = L.map('map').setView([40.7128, -74.0060], 12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    const markers = L.layerGroup().addTo(map);
+    let selectedLocation = null;
+
+    // Search bar
+    document.getElementById('location-input').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        const query = e.target.value;
+        if (!query) return;
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`)
+          .then(res => res.json())
+          .then(data => {
+            if (data && data.length > 0) {
+              const lat = data[0].lat;
+              const lon = data[0].lon;
+              selectedLocation = data[0].display_name;
+
+              markers.clearLayers();
+              map.setView([lat, lon], 13);
+              L.marker([lat, lon]).addTo(markers).bindPopup(selectedLocation).openPopup();
+            } else alert('Location not found.');
+          });
+      }
+    });
+
+    // Submit button
+    document.getElementById('submit-btn').addEventListener('click', () => {
+      if (!selectedLocation) {
+        alert('Please select a location first.');
+        return;
+      }
+      // Save to sessionStorage and go back
+      sessionStorage.setItem('location', selectedLocation);
+      window.location.href = 'index.html';
+    });
+
+    // Back button
+    function goBack() {
+      window.location.href = 'index.html';
+    }
+  </script>
+</body>
+</html>

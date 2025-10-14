@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Search Results - Charlotte Bar Deals</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-orange-100 text-gray-900 min-h-screen p-6">
+
+  <!-- Logo -->
+  <header class="mb-10">
+    <img src="logo_transparent.png" alt="Charlotte Bar Deals Logo" class="mx-auto h-16" />
+  </header>
+
+  <!-- Header -->
+  <div class="max-w-2xl mx-auto w-full mb-8">
+    <div class="flex items-center justify-between">
+      <button onclick="window.location.href='index.html'" class="bg-orange-500 text-white px-4 py-2 rounded-2xl shadow hover:bg-orange-600 transition">Back</button>
+      <h1 class="text-2xl font-bold text-center flex-1">Search Results</h1>
+      <div class="w-16"><!-- spacer to balance Back button --></div>
+    </div>
+  </div>
+
+  <!-- Results Grid -->
+  <main class="grid gap-6 max-w-2xl mx-auto">
+    <!-- Example Event Card -->
+    <div class="flex items-center bg-white rounded-2xl shadow-lg p-4 transform transition hover:scale-105 hover:shadow-xl cursor-pointer">
+      <img src="https://via.placeholder.com/150" alt="Event" class="w-28 h-28 rounded-lg object-cover mr-4" />
+      <div>
+        <h2 class="text-xl font-semibold">Half-Off Drinks at Local Bar</h2>
+        <p class="text-sm text-gray-600">Location: Uptown Charlotte</p>
+        <p class="text-sm text-gray-600">Distance: 2 miles</p>
+      </div>
+    </div>
+
+    <div class="flex items-center bg-white rounded-2xl shadow-lg p-4 transform transition hover:scale-105 hover:shadow-xl cursor-pointer">
+      <img src="https://via.placeholder.com/150" alt="Event" class="w-28 h-28 rounded-lg object-cover mr-4" />
+      <div>
+        <h2 class="text-xl font-semibold">Trivia Night at Pub XYZ</h2>
+        <p class="text-sm text-gray-600">Location: South End</p>
+        <p class="text-sm text-gray-600">Distance: 5 miles</p>
+      </div>
+    </div>
+
+    <div class="flex items-center bg-white rounded-2xl shadow-lg p-4 transform transition hover:scale-105 hover:shadow-xl cursor-pointer">
+      <img src="https://via.placeholder.com/150" alt="Event" class="w-28 h-28 rounded-lg object-cover mr-4" />
+      <div>
+        <h2 class="text-xl font-semibold">Live Band at Music Hall</h2>
+        <p class="text-sm text-gray-600">Location: Plaza Midwood</p>
+        <p class="text-sm text-gray-600">Distance: 4 miles</p>
+      </div>
+    </div>
+  </main>
+<script>
+(async function () {
+  // 1) Read filters from URL
+  const params   = new URLSearchParams(location.search);
+  const type     = params.get('type') || '';
+  const address  = params.get('location') || '';
+  const date     = params.get('date') || '';
+  const radius   = params.get('radius') || '10';
+
+  // 2) Geocode address -> lat/lng
+  const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`);
+  const geo = await geoRes.json();
+  if (!geo.length) {
+    document.querySelector('main').innerHTML = `<p class="text-center text-gray-700">Couldn’t find that location (“${address}”). Try a different address.</p>`;
+    return;
+  }
+  const lat = parseFloat(geo[0].lat);
+  const lng = parseFloat(geo[0].lon);
+
+  // 3) Call backend
+  const api = new URL(`http://localhost:5000/events`);
+  if (type && type !== 'Select an option') api.searchParams.set('type', type);
+  api.searchParams.set('lat', lat);
+  api.searchParams.set('lng', lng);
+  api.searchParams.set('radius', radius);
+  if (date) api.searchParams.set('date', date);
+
+  const evRes = await fetch(api);
+  const events = await evRes.json();
+
+  // 4) Render results
+  const grid = document.querySelector('main');
+  grid.innerHTML = '';
+
+  if (!events.length) {
+    grid.innerHTML = `<p class="text-center text-gray-700">No events found for your filters.</p>`;
+    return;
+  }
+
+  // distance helper (miles)
+  const toRad = d => (d * Math.PI) / 180;
+  function haversineMiles(lat1,lon1,lat2,lon2){
+    const R = 3958.8;
+    const dLat = toRad(lat2-lat1), dLon = toRad(lon2-lon1);
+    const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
+    return 2*R*Math.asin(Math.sqrt(a));
+  }
+
+  events.forEach(ev => {
+    const dist = (ev.lat && ev.lon) ? `${haversineMiles(lat, lng, ev.lat, ev.lon).toFixed(1)} miles` : '—';
+
+    const card = document.createElement('div');
+    card.className = "flex items-center bg-white rounded-2xl shadow-lg p-4 transform transition hover:scale-105 hover:shadow-xl cursor-pointer";
+
+    card.innerHTML = `
+      <img src="https://picsum.photos/150/150?random=${ev.id}" alt="Event" class="w-28 h-28 rounded-lg object-cover mr-4" />
+      <div>
+        <h2 class="text-xl font-semibold">${ev.name}</h2>
+        <p class="text-sm text-gray-600">Location: ${ev.address_name || ev.address || '—'}</p>        <p class="text-sm text-gray-600">Distance: ${dist}</p>
+        <p class="text-xs text-gray-500 mt-1">${ev.type} &middot; ${new Date(ev.start_time).toLocaleString()}</p>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+})();
+</script>
+</body>
+</html>

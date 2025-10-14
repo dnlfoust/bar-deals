@@ -1,0 +1,29 @@
+Restaurant ID,Restaurant,Address,Coordinates,Date,Day of Week,Deal,Category,All Day? (Y/N),Start Time,End Time,Last Updated
+1,Brewers at 4001 Yancey,4001-A Yancey Rd Charlotte NC 28217,35.1863387 -80.87815959999999,,Monday,$2 Off CLT Brewed Pours,Drink Deal,Y,,,8/11/2025
+1,Brewers at 4001 Yancey,4001-A Yancey Rd Charlotte NC 28217,35.1863387 -80.87815959999999,,Wednesday,$2 Off CLT Brewed Pours,Drink Deal,Y,,,8/11/2025
+1,Brewers at 4001 Yancey,4001-A Yancey Rd Charlotte NC 28217,35.1863387 -80.87815959999999,,Wednesday,$1 Wings,Food Deal,Y,,,8/11/2025
+1,Brewers at 4001 Yancey,4001-A Yancey Rd Charlotte NC 28217,35.1863387 -80.87815959999999,,Thursday,$8 Feature Burger,Food Deal,Y,,,8/11/2025
+1,Brewers at 4001 Yancey,4001-A Yancey Rd Charlotte NC 28217,35.1863387 -80.87815959999999,,Friday,20% Off To-Go Beer Merch Growlers & Crowlers,Drink Deal,Y,,,8/11/2025
+1,Brewers at 4001 Yancey,4001-A Yancey Rd Charlotte NC 28217,35.1863387 -80.87815959999999,,Sunday,Kids Eat Free,Food Deal,Y,,,8/11/2025
+2,O-Ku Sushi,2000 South Boulevard Suite 510 Charlotte NC 28203,35.2095271 -80.86045969999999,,Monday,Sushi Happy Hour,Food Deal,N,4:00 PM,7:00 PM,8/11/2025
+2,O-Ku Sushi,2000 South Boulevard Suite 510 Charlotte NC 28203,35.2095271 -80.86045969999999,,Wednesday,Sushi Happy Hour,Food Deal,N,4:00 PM,7:00 PM,8/11/2025
+3,Olde Mecklenburg Brewery,4150 Yancey Rd Charlotte NC 28217,35.1874225 -80.88183769999999,,Monday,$5 Pints All Day!,Drink Deal,Y,,,8/11/2025
+3,Olde Mecklenburg Brewery,4150 Yancey Rd Charlotte NC 28217,35.1874225 -80.88183769999999,,Tuesday,$9.50 Burger w/ Side,Food Deal,Y,,,8/11/2025
+3,Olde Mecklenburg Brewery,4150 Yancey Rd Charlotte NC 28217,35.1874225 -80.88183769999999,,Wednesday,1/2 Off Bottles of Wine,Drink Deal,Y,,,8/11/2025
+3,Olde Mecklenburg Brewery,4150 Yancey Rd Charlotte NC 28217,35.1874225 -80.88183769999999,,Monday,1/2 Off Pizzas,Food Deal,N,11:00 AM,4:00 PM,8/11/2025
+3,Olde Mecklenburg Brewery,4150 Yancey Rd Charlotte NC 28217,35.1874225 -80.88183769999999,,Tuesday,1/2 Off Pizzas,Food Deal,N,11:00 AM,4:00 PM,8/11/2025
+3,Olde Mecklenburg Brewery,4150 Yancey Rd Charlotte NC 28217,35.1874225 -80.88183769999999,,Wednesday,1/2 Off Pizzas,Food Deal,N,11:00 AM,4:00 PM,8/11/2025
+3,Olde Mecklenburg Brewery,4150 Yancey Rd Charlotte NC 28217,35.1874225 -80.88183769999999,,Thursday,1/2 Off Pizzas,Food Deal,N,11:00 AM,4:00 PM,8/11/2025
+4,Sycamore Brewing,2151 Hawkins Street Charlotte NC 28203,35.2091579 -80.86215059999999,,Monday,$5 Draft Pints,Drink Deal,Y,,,8/11/2025
+4,Sycamore Brewing,2151 Hawkins Street Charlotte NC 28203,35.2091579 -80.86215059999999,,Monday,Half Price Burgers,Food Deal,Y,,,8/11/2025
+4,Sycamore Brewing,2151 Hawkins Street Charlotte NC 28203,35.2091579 -80.86215059999999,,Tuesday,Half Price Wine,Drink Deal,Y,,,8/11/2025
+4,Sycamore Brewing,2151 Hawkins Street Charlotte NC 28203,35.2091579 -80.86215059999999,,Tuesday,$8 Pizza,Food Deal,Y,,,8/11/2025
+4,Sycamore Brewing,2151 Hawkins Street Charlotte NC 28203,35.2091579 -80.86215059999999,,Tuesday,Music Bingo,Music Bingo,N,6:30 PM,8:00 PM,8/11/2025
+4,Sycamore Brewing,2151 Hawkins Street Charlotte NC 28203,35.2091579 -80.86215059999999,,Wednesday,Yoga,Group Fitness,N,5:30 PM,6:30 PM,8/11/2025
+4,Sycamore Brewing,2151 Hawkins Street Charlotte NC 28203,35.2091579 -80.86215059999999,,Wednesday,Sycamore Run Club,Group Fitness,N,6:30 PM,7:30 PM,8/11/2025
+4,Sycamore Brewing,2151 Hawkins Street Charlotte NC 28203,35.2091579 -80.86215059999999,,Wednesday,Tommy's Trivia,Trivia,N,6:30 PM,8:00 PM,8/11/2025
+4,Sycamore Brewing,2151 Hawkins Street Charlotte NC 28203,35.2091579 -80.86215059999999,,Thursday,Half Price Margaritas,Drink Deal,Y,,,8/11/2025
+4,Sycamore Brewing,2151 Hawkins Street Charlotte NC 28203,35.2091579 -80.86215059999999,,Thursday,$3 Tacos,Food Deal,Y,,,8/11/2025
+4,Sycamore Brewing,2151 Hawkins Street Charlotte NC 28203,35.2091579 -80.86215059999999,,Saturday,Saturday Morning Yoga,Group Fitness,N,10:00 AM,11:00 AM,8/11/2025
+5,Tremont Kitchen & Bar,2000 South Blvd #530 Charlotte NC 28203,35.2096712 -80.86067589999999,,Wednesday,Survey Says Game Night,Trivia,N,7:00 PM,9:00 PM,8/11/2025
+5,Tremont Kitchen & Bar,2000 South Blvd #530 Charlotte NC 28203,35.2096712 -80.86067589999999,,Thursday,Trivia Night,Trivia,N,6:30 PM,8:30 PM,8/11/2025

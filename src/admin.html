@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin – Charlotte Bar Deals</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-orange-50 text-gray-900 min-h-screen p-6">
+  <header class="flex items-center justify-between max-w-5xl mx-auto mb-6">
+    <h1 class="text-2xl font-bold">Admin – Events</h1>
+    <a href="index.html" class="text-sm underline">Back to site</a>
+  </header>
+
+  <main class="max-w-5xl mx-auto grid md:grid-cols-2 gap-6">
+    <!-- Form -->
+    <section class="bg-white rounded-2xl shadow p-4">
+      <h2 class="text-lg font-semibold mb-3">Add / Edit Event</h2>
+      <div class="space-y-3">
+        <input id="ev_id" type="hidden" />
+
+        <input id="name" class="w-full border rounded-lg p-2" placeholder="Event name" />
+
+        <select id="type" class="w-full border rounded-lg p-2">
+          <option>Drink Deals</option>
+          <option>Food Deals</option>
+          <option>Trivia</option>
+          <option>Fitness Events</option>
+          <option>Entertainment</option>
+        </select>
+
+        <!-- New: Address name (venue name) -->
+        <input id="address_name" class="w-full border rounded-lg p-2" placeholder="Address name (e.g., Bar / Venue)" />
+
+        <textarea id="description" class="w-full border rounded-lg p-2" placeholder="Description"></textarea>
+        <input id="address" class="w-full border rounded-lg p-2" placeholder="Street, City, State" />
+
+        <div class="grid grid-cols-2 gap-3">
+          <input id="lat" class="border rounded-lg p-2" placeholder="Latitude (optional)" />
+          <input id="lon" class="border rounded-lg p-2" placeholder="Longitude (optional)" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-sm text-gray-600">Start</label>
+            <input id="start_date" type="date" class="w-full border rounded-lg p-2" />
+            <input id="start_time" type="time" class="w-full border rounded-lg p-2 mt-2" />
+          </div>
+          <div>
+            <label class="text-sm text-gray-600">End (optional)</label>
+            <input id="end_date" type="date" class="w-full border rounded-lg p-2" />
+            <input id="end_time" type="time" class="w-full border rounded-lg p-2 mt-2" />
+          </div>
+        </div>
+
+        <!-- Recurrence controls -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-sm text-gray-600">Recurrence</label>
+            <select id="recurrence" class="w-full border rounded-lg p-2">
+              <option value="none">None</option>
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-sm text-gray-600">Repeat until (optional)</label>
+            <input id="recurrence_until" type="date" class="w-full border rounded-lg p-2" />
+          </div>
+        </div>
+
+        <div class="flex flex-wrap gap-2">
+          <button id="btn_save" class="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600">Save</button>
+          <button id="btn_reset" class="bg-white border px-4 py-2 rounded-lg">Reset</button>
+          <!-- Duplicate selected event (uses hidden ev_id) -->
+          <button id="btn_duplicate" class="bg-gray-200 px-4 py-2 rounded-lg hover:bg-gray-300" title="Duplicate selected event">Duplicate</button>
+        </div>
+        <p id="msg" class="text-sm text-gray-600"></p>
+      </div>
+    </section>
+
+    <!-- List & CSV Import -->
+    <section class="bg-white rounded-2xl shadow p-4">
+      <div class="flex items-start justify-between mb-3 gap-3">
+        <div>
+          <h2 class="text-lg font-semibold">Events</h2>
+          <p class="text-xs text-gray-500">Use token to manage events</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <input id="admin_token" class="border rounded-lg p-2 text-sm" placeholder="Admin token" />
+        </div>
+      </div>
+
+      <!-- CSV import -->
+      <div class="border rounded-xl p-3 mb-4">
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <div>
+            <div class="font-medium">CSV Import</div>
+            <div class="text-xs text-gray-500">Columns: name,type,address_name,description,address,start_time,end_time,recurrence,recurrence_until,lat,lon</div>
+          </div>
+          <div class="flex items-center gap-2">
+            <input id="csv_file" type="file" accept=".csv" class="text-sm" />
+            <button id="btn_import" class="bg-orange-500 text-white px-3 py-2 rounded-lg hover:bg-orange-600">Import</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="list" class="space-y-3"></div>
+    </section>
+  </main>
+
+  <script>
+    const API_BASE = 'http://localhost:5000';
+
+    function dtToString(date, time) {
+      if (!date) return null;
+      const t = time || '00:00';
+      return `${date} ${t}:00`;
+    }
+
+    function formToPayload(){
+      const start = dtToString(document.getElementById('start_date').value, document.getElementById('start_time').value);
+      const end   = dtToString(document.getElementById('end_date').value,   document.getElementById('end_time').value);
+      return {
+        name: document.getElementById('name').value.trim(),
+        type: document.getElementById('type').value,
+        address_name: document.getElementById('address_name').value.trim(),
+        description: document.getElementById('description').value.trim(),
+        address: document.getElementById('address').value.trim(),
+        lat: document.getElementById('lat').value ? parseFloat(document.getElementById('lat').value) : null,
+        lon: document.getElementById('lon').value ? parseFloat(document.getElementById('lon').value) : null,
+        start_time: start,
+        end_time: end,
+        recurrence: document.getElementById('recurrence').value,
+        recurrence_until: document.getElementById('recurrence_until').value || null
+      };
+    }
+
+    function loadEventIntoForm(ev){
+      document.getElementById('ev_id').value = ev.id;
+      document.getElementById('name').value = ev.name || '';
+      document.getElementById('type').value = ev.type || 'Drink Deals';
+      document.getElementById('address_name').value = ev.address_name || '';
+      document.getElementById('description').value = ev.description || '';
+      document.getElementById('address').value = ev.address || '';
+      document.getElementById('lat').value = ev.lat ?? '';
+      document.getElementById('lon').value = ev.lon ?? '';
+      const s = ev.start_time ? new Date(ev.start_time) : null;
+      const e = ev.end_time ? new Date(ev.end_time) : null;
+      if (s){
+        document.getElementById('start_date').value = s.toISOString().slice(0,10);
+        document.getElementById('start_time').value = s.toTimeString().slice(0,5);
+      }
+      if (e){
+        document.getElementById('end_date').value = e.toISOString().slice(0,10);
+        document.getElementById('end_time').value = e.toTimeString().slice(0,5);
+      }
+      document.getElementById('recurrence').value = ev.recurrence || 'none';
+      document.getElementById('recurrence_until').value = ev.recurrence_until ? new Date(ev.recurrence_until).toISOString().slice(0,10) : '';
+    }
+
+    function resetForm(){
+      document.getElementById('ev_id').value = '';
+      document.getElementById('name').value = '';
+      document.getElementById('type').value = 'Drink Deals';
+      document.getElementById('address_name').value = '';
+      document.getElementById('description').value = '';
+      document.getElementById('address').value = '';
+      document.getElementById('lat').value = '';
+      document.getElementById('lon').value = '';
+      document.getElementById('start_date').value = '';
+      document.getElementById('start_time').value = '';
+      document.getElementById('end_date').value = '';
+      document.getElementById('end_time').value = '';
+      document.getElementById('recurrence').value = 'none';
+      document.getElementById('recurrence_until').value = '';
+      document.getElementById('msg').textContent = '';
+    }
+
+    async function fetchEvents(){
+      const token = document.getElementById('admin_token').value.trim();
+      const res = await fetch(`${API_BASE}/admin/events`, { headers: { 'x-admin-token': token }});
+      const events = await res.json();
+      const list = document.getElementById('list');
+      list.innerHTML = '';
+      if (!Array.isArray(events)) { list.textContent = 'Error loading events'; return; }
+      events.forEach(ev => {
+        const row = document.createElement('div');
+        row.className = 'flex items-start justify-between gap-3 border rounded-xl p-3';
+        row.innerHTML = `
+          <div>
+            <div class="font-semibold">${ev.name}</div>
+            <div class="text-sm text-gray-600">${ev.type} · ${ev.address_name || ev.address || ''}</div>
+            <div class="text-xs text-gray-500">${new Date(ev.start_time).toLocaleString()}</div>
+          </div>
+          <div class="flex gap-2">
+            <button class="px-3 py-1 rounded-lg bg-white border" data-edit="${ev.id}">Edit</button>
+            <button class="px-3 py-1 rounded-lg bg-gray-200" data-dup="${ev.id}">Duplicate</button>
+            <button class="px-3 py-1 rounded-lg bg-red-500 text-white" data-del="${ev.id}">Delete</button>
+          </div>
+        `;
+        list.appendChild(row);
+      });
+    }
+
+    async function saveEvent(){
+      const token = document.getElementById('admin_token').value.trim();
+      const id = document.getElementById('ev_id').value;
+      const payload = formToPayload();
+      const method = id ? 'PUT' : 'POST';
+      const url = id ? `${API_BASE}/admin/events/${id}` : `${API_BASE}/admin/events`;
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
+        body: JSON.stringify(payload)
+      });
+      const out = await res.json();
+      document.getElementById('msg').textContent = out.error ? out.error : 'Saved!';
+      if (!out.error) { resetForm(); fetchEvents(); }
+    }
+
+    async function duplicateEvent(id){
+      const token = document.getElementById('admin_token').value.trim();
+      const res = await fetch(`${API_BASE}/admin/events/${id}/duplicate`, { method: 'POST', headers: { 'x-admin-token': token }});
+      await res.json();
+      fetchEvents();
+    }
+
+    async function importCSV(){
+      const token = document.getElementById('admin_token').value.trim();
+      const file = document.getElementById('csv_file').files[0];
+      if (!file) return;
+      const text = await file.text();
+      const res = await fetch(`${API_BASE}/admin/import`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/csv', 'x-admin-token': token },
+        body: text
+      });
+      const out = await res.json();
+      document.getElementById('msg').textContent = out.error ? out.error : `Imported ${out.inserted || 0} events`;
+      fetchEvents();
+    }
+
+    async function onListClick(e){
+      const token = document.getElementById('admin_token').value.trim();
+      if (e.target.dataset.edit){
+        const id = e.target.dataset.edit;
+        const res = await fetch(`${API_BASE}/admin/events`, { headers: { 'x-admin-token': token }});
+        const items = await res.json();
+        const ev = items.find(x => String(x.id) === String(id));
+        if (ev) loadEventIntoForm(ev);
+      }
+      if (e.target.dataset.del){
+        const id = e.target.dataset.del;
+        if (!confirm('Delete this event?')) return;
+        await fetch(`${API_BASE}/admin/events/${id}`, { method: 'DELETE', headers: { 'x-admin-token': token }});
+        fetchEvents();
+      }
+      if (e.target.dataset.dup){
+        duplicateEvent(e.target.dataset.dup);
+      }
+    }
+
+    document.getElementById('btn_save').addEventListener('click', saveEvent);
+    document.getElementById('btn_reset').addEventListener('click', resetForm);
+    document.getElementById('list').addEventListener('click', onListClick);
+    document.getElementById('btn_import').addEventListener('click', importCSV);
+    document.getElementById('btn_duplicate').addEventListener('click', () => {
+      const id = document.getElementById('ev_id').value;
+      if (id) duplicateEvent(id);
+    });
+
+    fetchEvents();
+  </script>
+</body>
+</html>

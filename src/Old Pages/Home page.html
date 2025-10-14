@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simple Search Page</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 text-gray-900 flex flex-col items-center min-h-screen p-6">
+
+  <!-- Logo -->
+  <header class="mb-10">
+    <img src="https://via.placeholder.com/150x50?text=Logo" alt="Logo" class="mx-auto" />
+  </header>
+
+  <!-- What are you looking for? -->
+  <section class="mb-8 w-full max-w-md">
+    <label class="block text-lg font-semibold mb-2">What are you looking for?</label>
+    <select id="activity" class="w-full border rounded-lg p-3 shadow">
+      <option>Select an option</option>
+      <option>Restaurants</option>
+      <option>Hotels</option>
+      <option>Events</option>
+      <option>Shopping</option>
+    </select>
+  </section>
+
+  <!-- Where at? -->
+  <section class="mb-8 w-full max-w-md text-center">
+    <label class="block text-lg font-semibold mb-2">Where at?</label>
+    <button id="open-map" class="bg-blue-500 text-white px-6 py-3 rounded-xl shadow hover:bg-blue-600 mb-4">
+      Open Map
+    </button>
+    <div id="selected-location" class="text-gray-700 text-sm"></div>
+  </section>
+
+  <!-- When? -->
+  <section class="mb-8 w-full max-w-md">
+    <label class="block text-lg font-semibold mb-2">When?</label>
+    <div class="flex gap-4">
+      <input id="date" type="date" class="flex-1 border rounded-lg p-3 shadow" />
+      <select id="timeOfDay" class="flex-1 border rounded-lg p-3 shadow">
+        <option>Anytime</option>
+        <option>Morning</option>
+        <option>Afternoon</option>
+        <option>Evening</option>
+      </select>
+    </div>
+  </section>
+
+  <script>
+    // Open map.html when the button is clicked
+    document.getElementById('open-map').addEventListener('click', () => {
+      // Save current selections to sessionStorage
+      sessionStorage.setItem('activity', document.getElementById('activity').value);
+      sessionStorage.setItem('date', document.getElementById('date').value);
+      sessionStorage.setItem('time', document.getElementById('timeOfDay').value);
+
+      window.location.href = 'map.html';
+    });
+
+    // Load saved selections if coming back from map.html
+    const savedLocation = sessionStorage.getItem('location');
+    if (savedLocation) {
+      document.getElementById('selected-location').textContent = `Selected location: ${savedLocation}`;
+    }
+    const savedActivity = sessionStorage.getItem('activity');
+    if (savedActivity) document.getElementById('activity').value = savedActivity;
+    const savedDate = sessionStorage.getItem('date');
+    if (savedDate) document.getElementById('date').value = savedDate;
+    const savedTime = sessionStorage.getItem('time');
+    if (savedTime) document.getElementById('timeOfDay').value = savedTime;
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Charlotte Bar Deals</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .radius-btn.selected { background-color:#f97316; color:#fff; }
+  </style>
+</head>
+<body class="bg-orange-100 text-gray-900 min-h-screen p-6">
+
+  <!-- Header with centered logo and Add Event button -->
+  <header class="relative mb-6 max-w-5xl mx-auto">
+    <img src="logo_transparent.png" alt="Charlotte Bar Deals Logo" class="mx-auto h-16" />
+    <a href="admin.html"
+      class="absolute right-0 top-1/2 -translate-y-1/2 bg-orange-500 text-white px-4 py-2 rounded-xl shadow-md font-semibold transition hover:bg-orange-600 hover:shadow-lg">
+      Add a Deal or Event
+    </a>
+  </header>
+
+  <!-- What are you looking for? -->
+  <section class="mb-8 text-center">
+    <h2 class="text-xl font-semibold mb-3">What are you looking for?</h2>
+
+    <!-- Dropdown multiselect -->
+    <div class="relative inline-block">
+      <button id="typesToggle"
+        class="inline-flex items-center gap-2 bg-white border border-gray-300 rounded-lg px-4 py-2 shadow hover:shadow-md transition"
+        aria-haspopup="true" aria-expanded="false">
+        <span id="typesLabel">Choose types</span>
+        <svg class="w-4 h-4 opacity-70" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.25a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clip-rule="evenodd"/>
+        </svg>
+      </button>
+
+      <div id="typesMenu"
+        class="hidden absolute left-0 mt-2 w-64 bg-white border border-gray-200 rounded-xl shadow-xl z-10 p-3">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-sm font-semibold">Select deal types</span>
+          <div class="flex gap-2">
+            <button id="selectAll" class="text-xs px-2 py-1 rounded bg-gray-100 hover:bg-gray-200">Select all</button>
+            <button id="clearAll" class="text-xs px-2 py-1 rounded bg-gray-100 hover:bg-gray-200">Clear</button>
+          </div>
+        </div>
+        <div id="typesGroup" class="grid gap-2">
+          <label class="flex items-center gap-2 hover:bg-gray-50 rounded px-2 py-1">
+            <input type="checkbox" value="Drink Deals" class="type-box"> <span>Drink Deals</span>
+          </label>
+          <label class="flex items-center gap-2 hover:bg-gray-50 rounded px-2 py-1">
+            <input type="checkbox" value="Food Deals" class="type-box"> <span>Food Deals</span>
+          </label>
+          <label class="flex items-center gap-2 hover:bg-gray-50 rounded px-2 py-1">
+            <input type="checkbox" value="Trivia" class="type-box"> <span>Trivia</span>
+          </label>
+          <label class="flex items-center gap-2 hover:bg-gray-50 rounded px-2 py-1">
+            <input type="checkbox" value="Fitness Events" class="type-box"> <span>Fitness Events</span>
+          </label>
+          <label class="flex items-center gap-2 hover:bg-gray-50 rounded px-2 py-1">
+            <input type="checkbox" value="Entertainment" class="type-box"> <span>Entertainment</span>
+          </label>
+        </div>
+        <div class="mt-3 text-right">
+          <button id="applyTypes" class="text-sm bg-orange-500 text-white px-3 py-1.5 rounded-lg hover:bg-orange-600">Apply</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Where at? -->
+  <section class="mb-8 text-center">
+    <h2 class="text-xl font-semibold mb-2">Where at?</h2>
+
+    <!-- Location input with Near Me button -->
+    <div class="relative w-full max-w-xs mx-auto mb-4">
+      <input id="location-search" type="text" placeholder="Enter a location"
+        class="w-full border border-gray-300 rounded-lg p-2 shadow transition focus:ring-2 focus:ring-orange-400 focus:scale-105 hover:scale-105 pr-24" />
+      <button id="nearMeBtn"
+        class="absolute right-1 top-1 bottom-1 bg-orange-500 text-white px-3 rounded-lg text-sm font-medium transition hover:bg-orange-600 hover:shadow-md">
+        Near Me
+      </button>
+    </div>
+
+    <!-- Radius Buttons -->
+    <div class="flex justify-center gap-3 flex-wrap" id="radius-buttons">
+      <button class="radius-btn bg-white border border-gray-300 rounded-lg px-6 py-2 shadow-md transition transform hover:scale-105 hover:shadow-xl" data-radius="5">5 mi</button>
+      <button class="radius-btn bg-white border border-gray-300 rounded-lg px-6 py-2 shadow-md transition transform hover:scale-105 hover:shadow-xl" data-radius="10">10 mi</button>
+      <button class="radius-btn bg-white border border-gray-300 rounded-lg px-6 py-2 shadow-md transition transform hover:scale-105 hover:shadow-xl" data-radius="15">15 mi</button>
+      <button class="radius-btn bg-white border border-gray-300 rounded-lg px-6 py-2 shadow-md transition transform hover:scale-105 hover:shadow-xl" data-radius="20">20 mi</button>
+      <button class="radius-btn bg-white border border-gray-300 rounded-lg px-6 py-2 shadow-md transition transform hover:scale-105 hover:shadow-xl" data-radius="25">25 mi</button>
+    </div>
+  </section>
+
+  <!-- When? -->
+  <section class="mb-8 text-center">
+    <h2 class="text-xl font-semibold mb-2">When?</h2>
+    <div class="flex gap-4 justify-center">
+      <input id="date" type="date" class="border border-gray-300 rounded-lg p-2 shadow transition focus:ring-2 focus:ring-orange-400 focus:scale-105 hover:scale-105" />
+      <select id="timeOfDay" class="border border-gray-300 rounded-lg p-2 shadow transition focus:ring-2 focus:ring-orange-400 focus:scale-105 hover:scale-105">
+        <option>Anytime</option>
+        <option>Morning</option>
+        <option>Afternoon</option>
+        <option>Evening</option>
+      </select>
+    </div>
+  </section>
+
+  <!-- Let's Go Button -->
+  <div class="text-center mt-8">
+    <button id="letsGo"
+      class="bg-orange-500 text-white px-8 py-3 rounded-2xl shadow-md transition transform hover:scale-105 hover:shadow-xl hover:bg-orange-600 font-semibold">
+      Let's Go
+    </button>
+  </div>
+
+  <script>
+    const STATE_KEY = 'cbd_search_state';
+
+    const typeBoxes = Array.from(document.querySelectorAll('.type-box'));
+    const typesToggle = document.getElementById('typesToggle');
+    const typesMenu = document.getElementById('typesMenu');
+    const typesLabel = document.getElementById('typesLabel');
+    const selectAllBtn = document.getElementById('selectAll');
+    const clearAllBtn = document.getElementById('clearAll');
+    const applyTypesBtn = document.getElementById('applyTypes');
+
+    const locationEl = document.getElementById('location-search');
+    const dateEl = document.getElementById('date');
+    const timeEl = document.getElementById('timeOfDay');
+    const nearMeBtn = document.getElementById('nearMeBtn');
+    const radiusButtons = document.querySelectorAll('.radius-btn');
+
+    function getSelectedTypes(){
+      return typeBoxes.filter(b => b.checked).map(b => b.value);
+    }
+
+    function updateTypesLabel(){
+      const t = getSelectedTypes();
+      if (!t.length) { typesLabel.textContent = 'Choose types'; return; }
+      if (t.length <= 2) { typesLabel.textContent = t.join(', '); return; }
+      typesLabel.textContent = `${t.length} selected`;
+    }
+
+    function saveState() {
+      const selectedBtn = document.querySelector('.radius-btn.selected');
+      const state = {
+        types: getSelectedTypes(),
+        location: locationEl.value,
+        date: dateEl.value,
+        timeOfDay: timeEl.value,
+        radius: selectedBtn ? selectedBtn.dataset.radius : null,
+      };
+      localStorage.setItem(STATE_KEY, JSON.stringify(state));
+      updateTypesLabel();
+    }
+
+    function loadState() {
+      const json = localStorage.getItem(STATE_KEY);
+      if (!json) { updateTypesLabel(); return; }
+      try {
+        const s = JSON.parse(json);
+        if (Array.isArray(s.types)) {
+          const set = new Set(s.types);
+          typeBoxes.forEach(b => b.checked = set.has(b.value));
+        }
+        if (s.location) locationEl.value = s.location;
+        if (s.date) dateEl.value = s.date;
+        if (s.timeOfDay) timeEl.value = s.timeOfDay;
+        if (s.radius) {
+          radiusButtons.forEach(b => {
+            b.classList.remove('selected');
+            if (b.dataset.radius === String(s.radius)) b.classList.add('selected');
+          });
+        }
+      } catch {}
+      updateTypesLabel();
+    }
+
+    // Dropdown open/close
+    typesToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const open = typesMenu.classList.toggle('hidden');
+      typesToggle.setAttribute('aria-expanded', open ? 'false' : 'true');
+    });
+    applyTypesBtn.addEventListener('click', () => { saveState(); typesMenu.classList.add('hidden'); typesToggle.setAttribute('aria-expanded','false'); });
+    selectAllBtn.addEventListener('click', () => { typeBoxes.forEach(b => b.checked = true); saveState(); });
+    clearAllBtn.addEventListener('click', () => { typeBoxes.forEach(b => b.checked = false); saveState(); });
+    document.addEventListener('click', (e) => {
+      if (!typesMenu.contains(e.target) && !typesToggle.contains(e.target)) {
+        typesMenu.classList.add('hidden'); typesToggle.setAttribute('aria-expanded','false');
+      }
+    });
+
+    // Change handlers
+    typeBoxes.forEach(b => b.addEventListener('change', saveState));
+    [locationEl, dateEl, timeEl].forEach(el => {
+      el.addEventListener('change', saveState);
+      el.addEventListener('input', saveState);
+    });
+    radiusButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        radiusButtons.forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        saveState();
+      });
+    });
+    document.addEventListener('DOMContentLoaded', loadState);
+
+    // Near Me
+    nearMeBtn.addEventListener('click', () => {
+      if (!navigator.geolocation) { alert("Geolocation not supported."); return; }
+      nearMeBtn.textContent = "Locating…"; nearMeBtn.disabled = true;
+      navigator.geolocation.getCurrentPosition(async (pos) => {
+        try {
+          const { latitude, longitude } = pos.coords;
+          const r = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+          const data = await r.json();
+          locationEl.value = data.display_name || "Your location";
+          saveState();
+        } catch { alert("Couldn't determine your location name."); }
+        nearMeBtn.textContent = "Near Me"; nearMeBtn.disabled = false;
+      }, () => { alert("Unable to retrieve your location."); nearMeBtn.textContent = "Near Me"; nearMeBtn.disabled = false; });
+    });
+
+    // Go to results
+    document.getElementById('letsGo').addEventListener('click', () => {
+      const selectedBtn = document.querySelector('.radius-btn.selected');
+      const radius = selectedBtn ? selectedBtn.dataset.radius : null;
+      const types = getSelectedTypes();
+      const location = locationEl.value.trim();
+      const date = dateEl.value;
+      const timeOfDay = timeEl.value;
+
+      if (!location || !radius) { alert('Please enter a location (or use Near Me) and select a radius.'); return; }
+      if (!types.length) { alert('Please select at least one type.'); return; }
+
+      saveState();
+      const params = new URLSearchParams({
+        types: types.join(','), location, date, timeOfDay, radius
+      });
+      window.location.href = `results.html?${params.toString()}`;
+    });
+  </script>
+</body>
+</html>

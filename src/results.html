@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Charlotte Bar Deals - Results</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-orange-100 text-gray-900 min-h-screen p-6">
+
+  <!-- Header -->
+  <header class="relative max-w-5xl mx-auto mb-6 flex flex-col items-center">
+    <img src="logo_transparent.png" alt="Charlotte Bar Deals Logo" class="h-16 mb-4 mx-auto" />
+    <h1 class="text-2xl font-bold text-center">Search Results</h1>
+
+    <!-- Orange Back button -->
+    <a href="index.html"
+       class="absolute left-0 top-1/2 -translate-y-1/2 bg-orange-500 text-white px-4 py-2 rounded-xl shadow-md font-semibold transition hover:bg-orange-600 hover:shadow-lg">
+       ← Back
+    </a>
+  </header>
+
+  <!-- Filter Summary -->
+  <section class="max-w-3xl mx-auto mb-4" id="filterSummary" aria-live="polite"></section>
+
+  <!-- Results -->
+  <main class="max-w-4xl mx-auto">
+    <div id="resultsContainer" class="grid gap-5">
+      <!-- Filled dynamically -->
+    </div>
+  </main>
+
+  <script>
+    (async function () {
+      const container = document.getElementById('resultsContainer');
+      const summaryEl = document.getElementById('filterSummary');
+
+      // Read filters from URL (support CSV 'types' or repeated 'type')
+      const q = new URLSearchParams(location.search);
+      let types = [];
+      if (q.get('types')) {
+        types = q.get('types').split(',').map(s => s.trim()).filter(Boolean);
+      } else {
+        types = [...new Set(Array.from(q.entries())
+          .filter(([k]) => k === 'type')
+          .map(([,v]) => v.trim())
+          .filter(Boolean))];
+      }
+      const address = q.get('location') || '';
+      const date = q.get('date') || '';
+      const radius = q.get('radius') || '10';
+      const timeOfDay = q.get('timeOfDay') || '';
+
+      container.innerHTML = `<div class="text-center text-gray-700">Loading results…</div>`;
+
+      // Summary text
+      const parts = [];
+      if (types.length) parts.push(types.join(' + '));
+      if (radius) parts.push(`${radius} mi`);
+      if (address) parts.push(`near ${address}`);
+      if (date) parts.push(new Date(date).toLocaleDateString());
+      summaryEl.innerHTML = parts.length
+        ? `<p class="text-sm text-gray-700 text-center">Showing ${parts.join(' · ')}</p>`
+        : '';
+
+      // Geocode
+      let lat = null, lng = null;
+      if (address) {
+        try {
+          const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`);
+          const geo = await geoRes.json();
+          if (Array.isArray(geo) && geo.length) {
+            lat = parseFloat(geo[0].lat);
+            lng = parseFloat(geo[0].lon);
+          } else {
+            container.innerHTML = `<div class="text-center text-gray-700">Couldn’t find that location (“${address}”).</div>`;
+            return;
+          }
+        } catch {
+          container.innerHTML = `<div class="text-center text-red-700">Error finding location.</div>`;
+          return;
+        }
+      }
+
+      // Build API URL
+      const api = new URL(`http://localhost:5000/events`);
+      if (types.length) api.searchParams.set('types', types.join(','));
+      if (lat != null && lng != null) { api.searchParams.set('lat', lat); api.searchParams.set('lng', lng); }
+      if (radius) api.searchParams.set('radius', radius);
+      if (date) api.searchParams.set('date', date);
+
+      // Fetch events
+      let events = [];
+      try {
+        const res = await fetch(api);
+        events = await res.json();
+      } catch {
+        container.innerHTML = `<div class="text-center text-red-700">There was a problem loading results.</div>`;
+        return;
+      }
+
+      container.innerHTML = '';
+      if (!Array.isArray(events) || !events.length) {
+        container.innerHTML = `<div class="text-center text-gray-700">No events found for your filters.</div>`;
+        return;
+      }
+
+      // Distance helper
+      const toRad = d => (d * Math.PI) / 180;
+      const haversineMiles = (lat1, lon1, lat2, lon2) => {
+        const R = 3958.8;
+        const dLat = toRad(lat2 - lat1);
+        const dLon = toRad(lon2 - lon1);
+        const a = Math.sin(dLat / 2) ** 2 +
+                  Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+                  Math.sin(dLon / 2) ** 2;
+        return 2 * R * Math.asin(Math.sqrt(a));
+      };
+
+      // Render mid-width cards
+      for (const ev of events) {
+        const dist = (lat != null && lng != null && ev.lat != null && ev.lon != null)
+          ? `${haversineMiles(lat, lng, ev.lat, ev.lon).toFixed(1)} mi`
+          : '—';
+        const when = ev.start_time ? new Date(ev.start_time).toLocaleString() : '';
+
+        const card = document.createElement('div');
+        card.className = "flex bg-white p-4 rounded-2xl shadow-md hover:shadow-xl transition transform hover:scale-105 max-w-lg mx-auto";
+
+        card.innerHTML = `
+          <img src="https://picsum.photos/120/120?random=${ev.id || Math.floor(Math.random()*10000)}"
+               alt="Event" class="rounded-xl w-28 h-28 object-cover mr-4" />
+          <div>
+            <h3 class="text-lg font-semibold">${ev.name || 'Untitled Event'}</h3>
+            <p class="text-sm text-gray-600">Location: ${ev.address_name || ev.address || '—'}</p>
+            <p class="text-sm text-gray-600">Distance: ${dist}</p>
+            <p class="text-sm text-gray-600">${ev.type || ''}${when ? ' · ' + when : ''}</p>
+          </div>
+        `;
+
+        container.appendChild(card);
+      }
+    })();
+  </script>
+
+</body>
+</html>

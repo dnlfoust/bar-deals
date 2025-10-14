@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Charlotte Bar Deals</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .radius-btn.selected {
+      background-color: #f97316;
+      color: white;
+    }
+  </style>
+</head>
+<body class="bg-orange-100 text-gray-900 min-h-screen p-6">
+
+  <!-- Logo -->
+  <header class="mb-6">
+    <img src="logo_transparent.png" alt="Charlotte Bar Deals Logo" class="mx-auto h-16" />
+  </header>
+
+  <!-- What are you looking for? -->
+  <section class="mb-6 text-center">
+    <h2 class="text-xl font-semibold mb-2">What are you looking for?</h2>
+    <select class="w-full max-w-xs mx-auto border border-gray-300 rounded-lg p-2 shadow transition focus:ring-2 focus:ring-orange-400 focus:scale-105 hover:scale-105">
+      <option>Drink Deals</option>
+      <option>Food Deals</option>
+      <option>Trivia</option>
+      <option>Fitness Events</option>
+      <option>Entertainment</option>
+    </select>
+  </section>
+
+  <!-- Where at? -->
+  <section class="mb-6 text-center">
+    <h2 class="text-xl font-semibold mb-2">Where at?</h2>
+    <input type="text" placeholder="Enter a location" class="w-full max-w-xs mx-auto border border-gray-300 rounded-lg p-2 mb-4 shadow transition focus:ring-2 focus:ring-orange-400 focus:scale-105 hover:scale-105" />
+    <div class="flex justify-center space-x-3">
+      <button class="radius-btn bg-white border border-gray-300 rounded-lg px-4 py-2 shadow-md transition transform hover:scale-105 hover:shadow-xl">5 mi</button>
+      <button class="radius-btn bg-white border border-gray-300 rounded-lg px-4 py-2 shadow-md transition transform hover:scale-105 hover:shadow-xl">10 mi</button>
+      <button class="radius-btn bg-white border border-gray-300 rounded-lg px-4 py-2 shadow-md transition transform hover:scale-105 hover:shadow-xl">15 mi</button>
+      <button class="radius-btn bg-white border border-gray-300 rounded-lg px-4 py-2 shadow-md transition transform hover:scale-105 hover:shadow-xl">20 mi</button>
+      <button class="radius-btn bg-white border border-gray-300 rounded-lg px-4 py-2 shadow-md transition transform hover:scale-105 hover:shadow-xl">25 mi</button>
+    </div>
+  </section>
+
+  <!-- When? -->
+  <section class="mb-6 text-center">
+    <h2 class="text-xl font-semibold mb-2">When?</h2>
+    <input type="date" class="border border-gray-300 rounded-lg p-2 mb-2 shadow transition focus:ring-2 focus:ring-orange-400 focus:scale-105 hover:scale-105" />
+    <select class="border border-gray-300 rounded-lg p-2 shadow transition focus:ring-2 focus:ring-orange-400 focus:scale-105 hover:scale-105">
+      <option>Morning</option>
+      <option>Afternoon</option>
+      <option>Evening</option>
+      <option>Night</option>
+    </select>
+  </section>
+
+    <!-- Let's Go Button -->
+  <div class="text-center mt-8">
+    <button id="letsGo" class="bg-orange-500 text-white px-6 py-3 rounded-2xl shadow-md transition transform hover:scale-105 hover:shadow-xl hover:bg-orange-600">
+      Let's Go
+    </button>
+  </div>
+
+  <script>
+    const buttons = document.querySelectorAll('.radius-btn');
+    let selectedRadius = null;
+
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        buttons.forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        selectedRadius = btn.textContent.replace(' mi', '');
+      });
+    });
+
+    document.getElementById('letsGo').addEventListener('click', () => {
+      const type = document.querySelector('select').value;
+      const location = document.querySelector('input[type="text"]').value;
+      const date = document.querySelector('input[type="date"]').value;
+      const timeOfDay = document.querySelector('section select:last-of-type').value;
+
+      if (!location || !selectedRadius) {
+        alert('Please enter a location and select a radius.');
+        return;
+      }
+
+      const params = new URLSearchParams({
+        type,
+        location,
+        date,
+        timeOfDay,
+        radius: selectedRadius
+      });
+
+      window.location.href = `results.html?${params.toString()}`;
+    });
+  </script>
+
+
+</body>
+</html>
