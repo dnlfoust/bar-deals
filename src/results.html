@@ -35,8 +35,12 @@
       const container = document.getElementById('resultsContainer');
       const summaryEl = document.getElementById('filterSummary');
 
-      // Read filters from URL (support CSV 'types' or repeated 'type')
+      // Save the current query so deal.html can restore filters
+      sessionStorage.setItem('last_search', location.search || '');
+
+      // Read filters (supports CSV 'types' or repeated 'type')
       const q = new URLSearchParams(location.search);
+
       let types = [];
       if (q.get('types')) {
         types = q.get('types').split(',').map(s => s.trim()).filter(Boolean);
@@ -46,9 +50,10 @@
           .map(([,v]) => v.trim())
           .filter(Boolean))];
       }
-      const address = q.get('location') || '';
-      const date = q.get('date') || '';
-      const radius = q.get('radius') || '10';
+
+      const address   = q.get('location') || '';
+      const radius    = q.get('radius') || '';         // no hard default
+      const date      = q.get('date') || '';
       const timeOfDay = q.get('timeOfDay') || '';
 
       container.innerHTML = `<div class="text-center text-gray-700">Loading results…</div>`;
@@ -63,7 +68,7 @@
         ? `<p class="text-sm text-gray-700 text-center">Showing ${parts.join(' · ')}</p>`
         : '';
 
-      // Geocode
+      // Geocode the address to lat/lng
       let lat = null, lng = null;
       if (address) {
         try {
@@ -82,12 +87,16 @@
         }
       }
 
-      // Build API URL
+      // Build API URL (send both date and timeOfDay when present)
       const api = new URL(`http://localhost:5000/events`);
       if (types.length) api.searchParams.set('types', types.join(','));
       if (lat != null && lng != null) { api.searchParams.set('lat', lat); api.searchParams.set('lng', lng); }
       if (radius) api.searchParams.set('radius', radius);
       if (date) api.searchParams.set('date', date);
+      if (timeOfDay) api.searchParams.set('timeOfDay', timeOfDay);
+
+      // TEMP: log what we actually call
+      console.log('Fetching:', api.toString());
 
       // Fetch events
       let events = [];
@@ -117,26 +126,43 @@
         return 2 * R * Math.asin(Math.sqrt(a));
       };
 
-      // Render mid-width cards
+      // Render cards with right-arrow indicator
       for (const ev of events) {
         const dist = (lat != null && lng != null && ev.lat != null && ev.lon != null)
           ? `${haversineMiles(lat, lng, ev.lat, ev.lon).toFixed(1)} mi`
           : '—';
         const when = ev.start_time ? new Date(ev.start_time).toLocaleString() : '';
 
-        const card = document.createElement('div');
-        card.className = "flex bg-white p-4 rounded-2xl shadow-md hover:shadow-xl transition transform hover:scale-105 max-w-lg mx-auto";
-
+        const card = document.createElement('button');
+        card.type = "button";
+        card.className = "group flex justify-between items-center text-left bg-white p-4 rounded-2xl shadow-md hover:shadow-xl transition transform hover:scale-105 max-w-lg mx-auto w-full";
         card.innerHTML = `
-          <img src="https://picsum.photos/120/120?random=${ev.id || Math.floor(Math.random()*10000)}"
-               alt="Event" class="rounded-xl w-28 h-28 object-cover mr-4" />
-          <div>
-            <h3 class="text-lg font-semibold">${ev.name || 'Untitled Event'}</h3>
-            <p class="text-sm text-gray-600">Location: ${ev.address_name || ev.address || '—'}</p>
-            <p class="text-sm text-gray-600">Distance: ${dist}</p>
-            <p class="text-sm text-gray-600">${ev.type || ''}${when ? ' · ' + when : ''}</p>
+          <div class="flex items-center">
+            <img src="https://picsum.photos/120/120?random=${ev.id || Math.floor(Math.random()*10000)}"
+                 alt="Event" class="rounded-xl w-28 h-28 object-cover mr-4" />
+            <div class="pr-2">
+              <h3 class="text-lg font-semibold">${ev.name || 'Untitled Event'}</h3>
+              <p class="text-sm text-gray-600">Location: ${ev.address_name || ev.address || '—'}</p>
+              <p class="text-sm text-gray-600">Distance: ${dist}</p>
+              <p class="text-sm text-gray-600">${ev.type || ''}${when ? ' · ' + when : ''}</p>
+            </div>
+          </div>
+          <div class="ml-3 text-orange-500 flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 transition transform group-hover:translate-x-1"
+                 fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
           </div>
         `;
+
+        // On click: store event, go to deal.html
+        card.addEventListener('click', () => {
+          try {
+            sessionStorage.setItem('selected_event', JSON.stringify(ev));
+          } catch {}
+          const id = ev.id != null ? `?id=${encodeURIComponent(ev.id)}` : '';
+          window.location.href = `deal.html${id}`;
+        });
 
         container.appendChild(card);
       }
