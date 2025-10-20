@@ -70,12 +70,10 @@ function boundsFor(date, timeOfDay) {
 
 // -------------------- Public: /events --------------------
 app.get("/events", async (req, res) => {
-  console.log("[/events] raw query:", req.query);
   try {
     const { lat, lng, radius, date, timeOfDay } = req.query;
 
-    // ---------- Robust multi-type parsing ----------
-    // Accept: ?types=Drink Deals,Trivia  OR  ?type=Drink Deals&type=Trivia  OR  ?types[]=...
+    // robust multi-type parsing
     const raw = []
       .concat(req.query.types ?? [])
       .concat(req.query.type ?? [])
@@ -84,27 +82,12 @@ app.get("/events", async (req, res) => {
     let types = [];
     for (const item of raw) {
       if (Array.isArray(item)) {
-        for (const v of item) {
-          types.push(...String(v).split(","));
-        }
+        for (const v of item) types.push(...String(v).split(","));
       } else if (item != null) {
         types.push(...String(item).split(","));
       }
     }
     types = [...new Set(types.map(s => s.trim()).filter(Boolean).map(s => s.toLowerCase()))];
-
-    console.log("[/events] parsed types:", types);
-    // ------------------------------------------------
-
-    // Date window helper
-    function boundsFor(d, tod) {
-      const t = (tod || "").toLowerCase();
-      let startHH = "00:00:00", endHH = "23:59:59";
-      if (t === "morning")   { startHH = "05:00:00"; endHH = "11:59:59"; }
-      else if (t === "afternoon") { startHH = "12:00:00"; endHH = "16:59:59"; }
-      else if (t === "evening")   { startHH = "17:00:00"; endHH = "23:59:59"; }
-      return [`${d} ${startHH}`, `${d} ${endHH}`];
-    }
 
     const params = [];
     let q = `
@@ -116,22 +99,23 @@ app.get("/events", async (req, res) => {
       WHERE 1=1
     `;
 
-    // Type filter (case-insensitive, with explicit cast to text[])
     if (types.length) {
       params.push(types);
-      q += ` AND LOWER(type) = ANY($${params.length}::text[])`;
+      q += ` AND TRIM(LOWER(type)) = ANY($${params.length}::text[])`;
     }
 
-    // Date / time-of-day filter
     if (date) {
-      const [fromTs, toTs] = boundsFor(date, timeOfDay);
-      params.push(fromTs, toTs);
+      const tod = (timeOfDay || '').toLowerCase();
+      let startHH = '00:00:00', endHH = '23:59:59';
+      if (tod === 'morning')   { startHH = '05:00:00'; endHH = '11:59:59'; }
+      else if (tod === 'afternoon') { startHH = '12:00:00'; endHH = '16:59:59'; }
+      else if (tod === 'evening')   { startHH = '17:00:00'; endHH = '23:59:59'; }
+      params.push(`${date} ${startHH}`, `${date} ${endHH}`);
       q += ` AND start_time >= $${params.length - 1} AND start_time <= $${params.length}`;
     } else {
       q += ` AND start_time >= NOW()`;
     }
 
-    // Radius (mi → m)
     if (lat && lng && radius) {
       params.push(parseFloat(lng), parseFloat(lat), parseFloat(radius) * 1609.34);
       q += ` AND location IS NOT NULL AND ST_DWithin(
@@ -143,6 +127,9 @@ app.get("/events", async (req, res) => {
 
     q += ` ORDER BY start_time ASC LIMIT 200;`;
 
+    // TEMP debug: log composed SQL & params length (optional)
+    console.log('types:', types, 'radius:', radius, 'date:', date, 'timeOfDay:', timeOfDay);
+
     const { rows } = await pool.query(q, params);
     res.json(rows);
   } catch (e) {
@@ -150,8 +137,6 @@ app.get("/events", async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
-
-
 
 // -------------------- Health / Debug --------------------
 app.get("/healthz", async (req, res) => {
