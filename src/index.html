@@ -226,7 +226,7 @@
     // Go to results
     document.getElementById('letsGo').addEventListener('click', () => {
       const selectedBtn = document.querySelector('.radius-btn.selected');
-      const radius = selectedBtn ? selectedBtn.dataset.radius : null;
+      const radius = selectedBtn ? selectedBtn.dataset.radius : null; // <-- use this
       const types = getSelectedTypes();
       const location = locationEl.value.trim();
       const date = dateEl.value;
@@ -237,10 +237,19 @@
 
       saveState();
       const params = new URLSearchParams({
-        types: types.join(','), location, date, timeOfDay, radius
+        types: getSelectedTypes().join(","),      // send CSV
+        location,
+        date,
+        timeOfDay,
+        radius                       // <-- fixed (was selectedRadius)
       });
-      window.location.href = `results.html?${params.toString()}`;
+
+      const target = `results.html?${params.toString()}`;
+      console.log('Redirecting to:', target);
+      window.location.href = target;
     });
   </script>
+
+
 </body>
 </html>
