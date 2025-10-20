@@ -32,29 +32,54 @@
 
   <script>
     (async function () {
+      const STATE_KEY = 'cbd_search_state';
       const container = document.getElementById('resultsContainer');
       const summaryEl = document.getElementById('filterSummary');
 
-      // Save the current query so deal.html can restore filters
+      // Save current query so deal.html can restore filters
       sessionStorage.setItem('last_search', location.search || '');
 
-      // Read filters (supports CSV 'types' or repeated 'type')
+      // --- Helpers ---
       const q = new URLSearchParams(location.search);
+      const savedState = (() => {
+        try { return JSON.parse(localStorage.getItem(STATE_KEY) || '{}'); }
+        catch { return {}; }
+      })();
 
-      let types = [];
-      if (q.get('types')) {
-        types = q.get('types').split(',').map(s => s.trim()).filter(Boolean);
-      } else {
-        types = [...new Set(Array.from(q.entries())
+      // Parse types from URL (?types=csv or repeated ?type=...)
+      function parseTypesFromURL() {
+        if (q.get('types')) {
+          return q.get('types').split(',').map(s => s.trim()).filter(Boolean);
+        }
+        const repeated = Array.from(q.entries())
           .filter(([k]) => k === 'type')
-          .map(([,v]) => v.trim())
-          .filter(Boolean))];
+          .map(([, v]) => v.trim()).filter(Boolean);
+        return Array.from(new Set(repeated));
       }
 
-      const address   = q.get('location') || '';
-      const radius    = q.get('radius') || '';         // no hard default
-      const date      = q.get('date') || '';
-      const timeOfDay = q.get('timeOfDay') || '';
+      // Get value: prefer URL param, else saved state
+      function getParam(name, fallbackFromStateKey = name) {
+        const v = q.get(name);
+        if (v !== null && v !== undefined && v !== '') return v;
+        const s = savedState && savedState[fallbackFromStateKey];
+        return s != null ? String(s) : '';
+      }
+
+      // Pull all filters from URL or state
+      let types       = parseTypesFromURL();
+      if (!types.length && Array.isArray(savedState.types)) types = savedState.types;
+
+      const address   = getParam('location', 'location');
+      let radius      = getParam('radius', 'radius');
+      const date      = getParam('date', 'date');
+      const timeOfDay = getParam('timeOfDay', 'timeOfDay');
+
+      // If radius came from state as number, stringify it
+      if (radius && typeof radius !== 'string') radius = String(radius);
+
+      // Debug: show what we parsed
+      console.log('[results] location.href:', location.href);
+      console.log('[results] parsed filters:', { types, address, radius, date, timeOfDay, state: savedState });
 
       container.innerHTML = `<div class="text-center text-gray-700">Loading results…</div>`;
 
@@ -68,9 +93,13 @@
         ? `<p class="text-sm text-gray-700 text-center">Showing ${parts.join(' · ')}</p>`
         : '';
 
-      // Geocode the address to lat/lng
-      let lat = null, lng = null;
-      if (address) {
+      // Figure out lat/lng:
+      // - If URL had lat/lng, use those
+      // - Else if we have an address, geocode it
+      let lat = q.get('lat') ? parseFloat(q.get('lat')) : null;
+      let lng = q.get('lng') ? parseFloat(q.get('lng')) : null;
+
+      if ((lat == null || isNaN(lat) || lng == null || isNaN(lng)) && address) {
         try {
           const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`);
           const geo = await geoRes.json();
@@ -87,21 +116,23 @@
         }
       }
 
-      // Build API URL (send both date and timeOfDay when present)
+      // Build API URL (send filters explicitly if present)
       const api = new URL(`http://localhost:5000/events`);
       if (types.length) api.searchParams.set('types', types.join(','));
-      if (lat != null && lng != null) { api.searchParams.set('lat', lat); api.searchParams.set('lng', lng); }
-      if (radius) api.searchParams.set('radius', radius);
+      if (lat != null && !isNaN(lat) && lng != null && !isNaN(lng)) {
+        api.searchParams.set('lat', String(lat));
+        api.searchParams.set('lng', String(lng));
+      }
+      if (radius) api.searchParams.set('radius', String(radius));
       if (date) api.searchParams.set('date', date);
       if (timeOfDay) api.searchParams.set('timeOfDay', timeOfDay);
 
-      // TEMP: log what we actually call
-      console.log('Fetching:', api.toString());
+      console.log('[results] Fetching:', api.toString());
 
       // Fetch events
       let events = [];
       try {
-        const res = await fetch(api);
+        const res = await fetch(api.toString());
         events = await res.json();
       } catch {
         container.innerHTML = `<div class="text-center text-red-700">There was a problem loading results.</div>`;
@@ -157,9 +188,7 @@
 
         // On click: store event, go to deal.html
         card.addEventListener('click', () => {
-          try {
-            sessionStorage.setItem('selected_event', JSON.stringify(ev));
-          } catch {}
+          try { sessionStorage.setItem('selected_event', JSON.stringify(ev)); } catch {}
           const id = ev.id != null ? `?id=${encodeURIComponent(ev.id)}` : '';
           window.location.href = `deal.html${id}`;
         });
