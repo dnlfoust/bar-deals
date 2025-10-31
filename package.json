@@ -21,6 +21,7 @@
     "body-parser": "^2.2.0",
     "cors": "^2.8.5",
     "express": "^5.1.0",
+    "postgres": "^3.4.7",
     "sqlite3": "^5.1.7"
   }
 }
